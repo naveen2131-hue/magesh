@@ -8,13 +8,18 @@
           required: true
           type: string
 
+        release_branch:
+          description: 'Release Branch Name'
+          required: true
+          type: string
+
         pr_branch:
           description: 'PR Branch Name'
           required: true
           type: string
 
-        release_branch:
-          description: 'Release Branch Name'
+        product_name:
+          description: 'Product Name'
           required: true
           type: string
 
@@ -54,7 +59,7 @@
             git branch
             echo '' >> .github/workflows/ci.yml
             cat ${GITHUB_WORKSPACE}/Helm-Chart >> .github/workflows/ci.yml
-            sed -i '/secrets: inherit/a\    with:\n      product_name: automation' .github/workflows/ci.yml
+            sed -i '/secrets: inherit/a\    with:\n      product_name: ${{ inputs.product_name }}' .github/workflows/ci.yml
             git config --global user.name "DevSecOps"
             git config --global user.email "devsecops@gmail.com"
             git add .
