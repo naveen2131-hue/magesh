@@ -1,0 +1,15 @@
+name: Helm Chart Scan
+on:
+  push:
+    branches:
+      - master
+
+  pull_request:
+    branches:
+      - master    
+
+jobs:
+  build:
+    name: Helm Chart Scan
+    uses: m2pfintech/actions/.github/workflows/helm-chart-v3-scan.yaml@v3
+    secrets: inherit    
