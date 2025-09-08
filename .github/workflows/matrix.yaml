@@ -1,4 +1,4 @@
-name: Matrix Helm Chart
+name: matrix-input-loop
 
 on:
   workflow_dispatch:
@@ -35,23 +35,23 @@ jobs:
           PRODUCT_NAMES: ${{ github.event.inputs.product_names }}
           GITHUB_TOKEN: ${{ secrets.TOKEN_GITHUB }}
         run: |
-          IFS=',' read -ra repos <<< "$REPO_NAMES"
-          IFS=',' read -ra releases <<< "$RELEASE_BRANCHES"
-          IFS=',' read -ra prs <<< "$PR_BRANCHES"
-          IFS=',' read -ra products <<< "$PRODUCT_NAMES"
           for i in "${!repos[@]}"; do
-            echo "Processing: repo=${repos[$i]}, release=${releases[$i]}, pr=${prs[$i]}, product=${products[$i]}"
-            git clone --branch "${releases[$i]}" "https://github.com/m2pfintech/${repos[$i]}.git" "${repos[$i]}"
-            cd "${repos[$i]}"
-            git checkout -b "${prs[$i]}"
+            repo=$(echo "${repos[$i]}" | xargs)
+            release=$(echo "${releases[$i]}" | xargs)
+            pr=$(echo "${prs[$i]}" | xargs)
+            product=$(echo "${products[$i]}" | xargs)
+            echo "Processing: repo=$repo, release=$release, pr=$pr, product=$product"
+            git clone --branch "$release" "https://x-access-token:${GITHUB_TOKEN}@github.com/m2pfintech/$repo.git" "$repo"
+            cd "$repo"
+            git checkout -b "$pr"
             mkdir -p .github/workflows
             echo '' >> .github/workflows/ci.yml
             cat ${GITHUB_WORKSPACE}/Helm-Chart >> .github/workflows/ci.yml
-            sed -i '/secrets: inherit/a\    with:\n      product_name: ${products[$i]}' .github/workflows/ci.yml
+            sed -i '/secrets: inherit/a\    with:\n      product_name: '"$product" .github/workflows/ci.yml
             git config --global user.name "DevSecOps"
             git config --global user.email "devsecops@gmail.com"
             git add .github/workflows/ci.yml
             git commit -m "Helm Chart Scan"
-            git push --set-upstream origin "${prs[$i]}"
+            git push --set-upstream origin "$pr"
             cd ..
           done
