@@ -54,8 +54,8 @@
         - name: commit
           run: |
             cd ${{ inputs.repo_name }}
-            git fetch origin ${ input.release_branch }
-            git checkout -b ${{ input.pr_branch}}  origin/${ input.release_branch }
+            git fetch origin ${{ inputs.release_branch }}
+            git checkout -b ${{ inputs.pr_branch }}  origin/${{ inputs.release_branch }}
             git branch
             echo '' >> .github/workflows/ci.yml
             cat ${GITHUB_WORKSPACE}/Helm-Chart >> .github/workflows/ci.yml
@@ -64,7 +64,7 @@
             git config --global user.email "devsecops@gmail.com"
             git add .
             git commit -m "Helm Chart Scan"
-            git push --set-upstream origin ${{ input.pr_branch }}
+            git push --set-upstream origin ${{ inputs.pr_branch }}
 
         # - name: Create pull request
         #   run: |
@@ -72,4 +72,4 @@
         #     -H "Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
         #     -H "Accept: application/vnd.github.v3+json" \
         #     https://api.github.com/repos/m2pfintech/poc-m2p-devsecops-application-config/pulls \
-        #     -d '{"title":"Add Helm Chart","head":"${{ input.pr_branch}}","base":"${{ input.release_branch}}","body":"This PR adds the Helm Chart to the uat branch."}'
+        #     -d '{"title":"Add Helm Chart","head":"${{ inputs.pr_branch }}","base":"${{ inputs.release_branch }}","body":"This PR adds the Helm Chart to the uat branch."}'
