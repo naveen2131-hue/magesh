@@ -1,0 +1,72 @@
+name: matrix
+
+on:
+  workflow_dispatch:
+
+jobs:
+  Enable_Helm_Chart_Scan:
+    name: Enable Helm Chart Scan 
+    runs-on: medium-runner
+    strategy:
+      matrix:
+        include:
+          - repo_name: repo1
+            release_branch: uat
+            pr_branch: feature-branch-1
+            product_name: productA
+          - repo_name: repo2
+            release_branch: uat
+            pr_branch: feature-branch-2
+            product_name: productB
+          - repo_name: repo3
+            release_branch: uat
+            pr_branch: feature-branch-3
+            product_name: productC
+          - repo_name: repo4
+            release_branch: uat
+            pr_branch: feature-branch-4
+            product_name: productD
+
+    steps:
+      - name: Create Github App Token
+        uses: actions/create-github-app-token@v1
+        id: app-token
+        with:
+          app-id: ${{ vars.APP_ID_GTIHUB }}
+          private-key: ${{ secrets.PRIVATE_KEY_GITHUB }}
+          owner: m2pfintech
+          repositories: ${{ matrix.repo_name }}
+
+      - name: Checkout 
+        uses: actions/checkout@v4
+
+      - name: Checkout external repo
+        uses: actions/checkout@v4
+        with:
+          repository: m2pfintech/${{ matrix.repo_name }}
+          path: ${{ matrix.repo_name }}
+          token: ${{ secrets.TOKEN_GITHUB }}
+          ref: ${{ matrix.release_branch }}
+
+      - name: commit
+        run: |
+          cd ${{ matrix.repo_name }}
+          git fetch origin ${{ matrix.release_branch }}
+          git checkout -b ${{ matrix.pr_branch }} origin/${{ matrix.release_branch }}
+          git branch
+          echo '' >> .github/workflows/ci.yml
+          cat ${GITHUB_WORKSPACE}/Helm-Chart >> .github/workflows/ci.yml
+          sed -i '/secrets: inherit/a\    with:\n      product_name: ${{ matrix.product_name }}' .github/workflows/ci.yml
+          git config --global user.name "DevSecOps"
+          git config --global user.email "devsecops@gmail.com"
+          git add .
+          git commit -m "Helm Chart Scan"
+          git push --set-upstream origin ${{ matrix.pr_branch }}
+
+      # - name: Create pull request
+      #   run: |
+      #     curl -X POST \
+      #     -H "Authorization: Bearer ${{ steps.app-token.outputs.token }}" \
+      #     -H "Accept: application/vnd.github.v3+json" \
+      #     https://api.github.com/repos/m2pfintech/${{ matrix.repo_name }}/pulls \
+      #     -d '{"title":"Add Helm Chart","head":"${{ matrix.pr_branch }}","base":"${{ matrix.release_branch }}","body":"This PR adds the Helm Chart to the uat branch."}'
