@@ -1,4 +1,4 @@
-name: matrix-input-loop
+name: Matrix Helm Chart
 
 on:
   workflow_dispatch:
@@ -41,7 +41,7 @@ jobs:
           IFS=',' read -ra products <<< "$PRODUCT_NAMES"
           for i in "${!repos[@]}"; do
             echo "Processing: repo=${repos[$i]}, release=${releases[$i]}, pr=${prs[$i]}, product=${products[$i]}"
-            git clone --branch "${releases[$i]}" "https://x-access-token:${GITHUB_TOKEN}@github.com/m2pfintech/${repos[$i]}.git" "${repos[$i]}"
+            git clone --branch "${releases[$i]}" "https://github.com/m2pfintech/${repos[$i]}.git" "${repos[$i]}"
             cd "${repos[$i]}"
             git checkout -b "${prs[$i]}"
             mkdir -p .github/workflows
